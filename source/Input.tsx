@@ -13,7 +13,8 @@ const Input: FC<Props> = ({
 	onChange,
 	onSubmit
 }) => {
-	return <Box>
+	  return <Box>
+    </Box>
 };
 
 export default Input;

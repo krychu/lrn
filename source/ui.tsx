@@ -1,59 +1,69 @@
-import React, {FC, useState} from 'react';
+import React, {FC} from 'react';
 import {Text, Box, useInput, useApp} from 'ink';
-import TextInput from 'ink-text-input';
-import { Card } from "./cli";
+//import { Card } from "./cli";
+import { useRecoilState } from "recoil";
 import chalk from "chalk";
+import { cardsState, userInputState, Card } from "./state";
 
-const App: FC<{cards: Card[]}> = ({cards = []}) => {
-	const {exit} = useApp();
-	/* const [cards, setCards] = useState(_cards); */
+/*
+   {
+   upArrow: false,
+   downArrow: false,
+   leftArrow: false,
+   rightArrow: false,
+   pageDown: false,
+   pageUp: false,
+   return: false,
+   escape: false,
+   ctrl: true,
+   shift: false,
+   tab: false,
+   backspace: false,
+   delete: false,
+   meta: false
+   }
+*/
 
-	//const [card] = useState(cards[0] as Card);
-	const [input, setInput] = useState("");
-	const [text, setText] = useState("");
+   /* const App: FC<{cards2: Card[]}> = ({cards2 = []}) => { */
+const App: FC<{}> = () => {
+	  const {exit} = useApp();
+	  /* const [cards, setCards] = useState(_cards); */
 
-	/* const [progress, setProgress] = useState({cardCnt: cards.length, answeredCnt: 0}); */
+	  //const [card] = useState(cards[0] as Card);
+	  /* const [input, setInput] = useState(""); */
+	  //const [text, setText] = useState("");
+    const [userInput, setUserInput] = useRecoilState(userInputState);
+    const [cards] = useRecoilState(cardsState);
 
-	useInput((input, key) => {
-		if (input === 'q') {
-			exit();
-		}
+	  /* const [progress, setProgress] = useState({cardCnt: cards.length, answeredCnt: 0}); */
 
-		if (key.leftArrow) {
-			// Left arrow key pressed
-			//console.log("jaja");
-			//setCards(cards);
-			//setCards(cards.slice(0,1));
-		} else if (key.return) {
-		}
+	  useInput((input, key) => {
+		    if (input === 'q') {
+			      exit();
+		    }
 
-		//setText(text + input);
-	});
+		    if (key.leftArrow) {
+		    } else if (key.return) {
+            setUserInput("");
+            return;
+		    } else if (key.delete) {
+            setUserInput(userInput.slice(0, userInput.length-1));
+            return;
+        }
 
-	const onSubmit = (val: string) => {
-		console.log(val);
-	};
+		    setUserInput(userInput + input);
+	  });
 
-
-	return <Box justifyContent="center">
-		<Box flexBasis="50%" flexDirection="column" borderStyle="single">
-			<Box padding={1}>
-				<Text>{(cards[0] as Card).question}</Text>
-			</Box>
-			<TextInput value={input} onChange={setInput} onSubmit={onSubmit} />
-			<Box borderStyle="single">
-				<Text>first text</Text>
-			</Box>
-			<Box marginTop={-1} borderStyle="single">
-				<Box marginTop={-1}>
-					<Text>second text</Text>
-				</Box>
-			</Box>
-			<Box>
-				<Text>{text}{chalk.inverse(" ")}</Text>
-			</Box>
-		</Box>
-	</Box>
+	  return <Box justifyContent="center">
+		    <Box flexBasis="50%" flexDirection="column" borderStyle="single">
+			      <Box paddingX={1}>
+				        <Text>{(cards[0] as Card).question}</Text>
+			      </Box>
+			      <Box paddingX={1} paddingTop={1}>
+				        <Text>{userInput}{chalk.inverse(" ")}</Text>
+			      </Box>
+		    </Box>
+	  </Box>
 };
 
 module.exports = App;
