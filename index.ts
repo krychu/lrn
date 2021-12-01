@@ -8,6 +8,7 @@
 // });
 
 import fs from "fs";
+import assert from 'assert/strict';
 import blessed, {Widgets} from "blessed";
 //const blessed = require("neo-blessed");
 
@@ -17,68 +18,147 @@ interface Card {
 	  goodCnt: number;
 };
 
-const {screen, question, input, answer} = createUI();
+const {screen, questionElement, inputElement, answerElement} = createUI();
 let step: "question" | "bad-answer" | "good-answer" | "end" = "question";
 const cards = readCards("cards/german.txt");
 let card: Card = cards[0];
-let answer: string | null = null;
+let answer: string = "";
 nextCard();
 
-input.on("submit", (a) => {
-    // input.setValue("");
-    // screen.render();
-    answer = a;
-    // console.log("here1");
-    // if (a === card.answer) {
-    //     card.goodCnt++;
-    //     renderGoodAnswer();
-    //     step = "good-answer";
-    // } else {
-    //     renderBadAnswer();
-    //     step = "bad-answer";
-    // }
-});
+// input.on("submit", (a) => {
+//     // input.setValue("");
+//     // screen.render();
+//     answer = a;
+//     // console.log("here1");
+//     // if (a === card.answer) {
+//     //     card.goodCnt++;
+//     //     renderGoodAnswer();
+//     //     step = "good-answer";
+//     // } else {
+//     //     renderBadAnswer();
+//     //     step = "bad-answer";
+//     // }
+// });
 
-screen.on("keypress", (ch, key) => {
-    if (step === "question" && key.name === "return") {
-        if (answer === card.answer) {HERE
-            step = "good-answer";
-            card.goodCnt++;
-            render();
-        } else {
-            step = "bad-answer";
-            render();
-        }
-    } else if ((step === "good-answer" || step === "bad-answer") && key.name === "return") {
-        step = "question";
-        nextCard();
-        render();
-    }
-});
+// screen.on("keypress", (ch, key) => {
+//     if (step === "question" && key.name === "return") {
+//         if (answer === card.answer) {
+//             step = "good-answer";
+//             card.goodCnt++;
+//             render();
+//         } else {
+//             step = "bad-answer";
+//             render();
+//         }
+//     } else if ((step === "good-answer" || step === "bad-answer") && key.name === "return") {
+//         step = "question";
+//         nextCard();
+//         render();
+//     }
+// });
+
+// good
+inputElement.on("submit", text => (answer = text));
+// This will be called AFTER submit above
+// screen.key("return", () => {
+//     if (step === "question") {
+//         processAnswer();
+//     } else if (step === "bad-answer" || step === "good-answer") {
+//         nextCard();
+//     }
+// });
+screen.key("return", nextStep);
 
 // input.readInput(() => {});
 screen.render();
-//input.focus();
+inputElement.focus();
 //input.focus();
 
-function renderGoodAnswer() {
-    //
+function processAnswer() {
+    if (answer.toLowerCase() === card.answer.toLowerCase()) {
+        step = "good-answer";
+        card.goodCnt++;
+        inputElement.style.fg = "green";
+    } else {
+        step = "bad-answer";
+        inputElement.style.fg = "red";
+    }
+    screen.render();
 }
 
-function renderBadAnswer() {
-    answer.setContent(card.answer);
-    answer.show();
-    screen.render();
+function processAnswer() {
+    gotoGoodAnswer() || gotoBadAnswer();
+    // if (answer.toLowerCase() === card.answer.toLowerCase()) {
+    //     gotoGoodAnswer();
+    // } else {
+    //     gotoBadAnswer();
+    // }
+}
+
+function gotoGoodAnswer() {
+    if (answer.toLowerCase() !== card.answer.toLowerCase()) {
+        return false;
+    }
+    step = "good-answer";
+    HERE
 }
 
 function nextCard() {
-    card = cards.filter(card => card.goodCnt<2)[0];
-    answer.hide();
-    input.setValue("");
-    question.setContent(card.question);
-    input.focus();
-    screen.render();
+    const candidateCards = cards.filter(card => card.goodCnt < requiredGoodCnt);
+
+    if (candidateCards.length) {
+        card = candidateCards[Math.floor(Math.random() * candidateCards.length)];
+    } else {
+        step = "end"
+    }
 }
+
+// new idea
+function nextStep() {
+    if (step === "question") {
+        if (answer.toLowerCase() === card.answer.toLowerCase()) {
+            step = "good-answer";
+        } else {
+            step = "bad-answer";
+        }
+    } else if (step === "good-answer" || step === "bad-answer") {
+        step = "question";
+    }
+}
+
+function nextStep() {
+    if (step === "question") {
+        processAnswer();
+    } else if (step === "good-answer" || step === "bad-answer") {
+        nextCard();
+    }
+}
+
+// function render() {
+    
+// }
+
+// function stepQuestion() {
+// }
+
+// function renderGoodAnswer() {
+//     //
+// }
+
+// function renderBadAnswer() {
+//     answer.setContent(card.answer);
+//     answer.show();
+//     screen.render();
+// }
+
+// function nextCard() {
+//     card = cards.filter(card => card.goodCnt<2)[0];
+//     answer.hide();
+//     input.setValue("");
+//     question.setContent(card.question);
+//     input.focus();
+//     screen.render();
+// }
 
 function createUI() {
     const screen = blessed.screen({
@@ -87,7 +167,7 @@ function createUI() {
 
     screen.title = "Krychu";
 
-    const question = blessed.box({
+    const questionElement = blessed.box({
         top: "center",
         left: "center",
         width: "50%",
@@ -114,7 +194,7 @@ function createUI() {
         return process.exit(0);
     });
 
-    const input = blessed.textbox({
+    const inputElement = blessed.textbox({
         content: "lala",
         border: {
             type: "line"
@@ -123,7 +203,7 @@ function createUI() {
         inputOnFocus: true
     });
 
-    const answer = blessed.box({
+    const answerElement = blessed.box({
         content: "Box2",
         border: {
             type: "line"
@@ -132,11 +212,11 @@ function createUI() {
         height: 10
     });
 
-    screen.append(question);
-    question.append(input);
-    question.append(answer);
+    screen.append(questionElement);
+    questionElement.append(inputElement);
+    questionElement.append(answerElement);
 
-    return {screen, question, input, answer};
+    return {screen, questionElement, inputElement, answerElement};
 }
 
 function readCards(filename: string): Card[] {
@@ -184,7 +264,7 @@ function readCards(filename: string): Card[] {
 //input.focus();
 //input.readInput(function() {});
 
-input.key(["C-c"], (ch, key) => {
+inputElement.key(["C-c"], (ch, key) => {
     return process.exit(0);
 });
 
