@@ -7,8 +7,45 @@
 //     term.green("Your name is %s", input);
 // });
 
-import blessed from "blessed";
+import blessed, {Widgets} from "blessed";
+import {autorun, makeAutoObservable} from "mobx";
 //const blessed = require("neo-blessed");
+
+class State {
+    screen: Widgets.Screen;
+    questionElement: Widgets.BlessedElement;
+    inputElement: Widgets.TextareaElement;
+    answerElement: Widgets.BlessedElement;
+
+    userInput: string;
+
+    constructor(screen: Widgets.Screen, questionElement: Widgets.BlessedElement, inputElement: Widgets.TextareaElement, answerElement: Widgets.BlessedElement) {
+        makeAutoObservable(this);
+
+        this.screen = screen;
+        this.questionElement = questionElement;
+        this.inputElement = inputElement;
+        this.answerElement = answerElement;
+        this.userInput = "";
+
+        autorun(() => {
+            this.inputElement.on("submit", (input) => {
+                console.log(input);
+            });
+            this.inputElement.readInput(() => {});
+        });
+
+        autorun(() => {
+            console.log(this.userInput);
+        });
+    }
+};
+
+class UI {
+    constructor(state) {
+        //
+    }
+}
 
 const screen = blessed.screen({
     smartCSR: true
@@ -75,12 +112,17 @@ const input = blessed.textbox({
 box.append(box2);
 box.append(input);
 
+const state = new State(screen, box2, input, box3);
+// state.screen = screen;
+// state.questionElement = box2;
+// state.inputElement = input;
+// state.answerElement = box3;
 screen.render();
 
 input.key(["C-c"], (ch, key) => {
     return process.exit(0);
 });
 
-input.on("submit", (a) => {input.setValue(""); screen.render()});
-//input.focus();
-input.readInput(() => {});
+// input.on("submit", (a) => {input.setValue(""); screen.render()});
+// //input.focus();
+// input.readInput(() => {});
