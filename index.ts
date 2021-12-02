@@ -29,17 +29,16 @@ let answer: string = "";
 // This is called before `return` handler, so the `answer`
 // is set when `gotoNext` is called.
 inputElement.on("submit", text => (answer = text));
-inputElement.key("")HERE
 screen.key("return", gotoNext);
+inputElement.key(["escape", "C-c"], () => {
+    return process.exit(0);
+})
 screen.key(["escape", "q", "C-c"], (ch, key) => {
-    console.log("haha");
     return process.exit(0);
 });
 
+//screen.render();
 gotoNext();
-
-// input.readInput(() => {});
-// screen.render();
 
 // function processReturn()
 function gotoNext() {
@@ -58,8 +57,10 @@ function gotoQuestion() {
         inputElement.style.fg = "white";
         inputElement.setValue("");
         questionElement.setContent(card.question);
+        //questionElement.insertTop(card.question);
         answerElement.hide();
         inputElement.focus();
+        //console.log("render");
         screen.render();
         return true;
     }
@@ -118,55 +119,79 @@ function isAnswerCorrect(): boolean {
 
 function createUI() {
     const screen = blessed.screen({
-        smartCSR: true
+        smartCSR: true,
+        dockBorders: true
     });
 
-    screen.title = "Krychu";
+    screen.title = "Flash Gordon";
 
-    const questionElement = blessed.box({
+    const containerElement = blessed.box({
+        content: "",
         top: "center",
         left: "center",
         width: "50%",
-        height: "50%",
-        content: "Hello {bold}world{/bold}!",
-        tags: true,
-        label: "haha",
+        //height: "auto",
+        shrink: true,
         border: {
             type: "line"
         },
         style: {
             fg: "white",
-            //bg: "magenta",
             border: {
                 fg: "#f0f0f0"
-            },
-            hover: {
-                bg: "green"
             }
         }
     });
 
+    const questionElement = blessed.box({
+        //top: "center",
+        //top: "50%",
+        //left: "center",
+        top: 0,
+        left: 0,
+        //width: "50%",
+        //shrink: true,
+        height: "shrink",
+        padding: {left: 1, right: 1},
+        //maxWidth: "100%-2",
+        //height: 1,
+        //shrink: true,
+        //height: 3,
+        //scrollable: true,
+        content: "",
+        tags: true
+        //label: "haha",
+    });
+
     const inputElement = blessed.textbox({
-        content: "lala",
-        border: {
-            type: "line"
-        },
-        top: 10,
+        top: 3,
+        //bottom: 0,
+        left: 0,
+        //width: 10,
+        height: 3,
+        padding: {top: 1, left: 1, right: 1},
+        content: "",
+        //top: 10,
         inputOnFocus: true
     });
 
     const answerElement = blessed.box({
-        content: "Box2",
-        border: {
-            type: "line"
-        },
-        width: 20,
-        height: 10
+        width: 10,
+        height: 3,
+        top: 2,
+        left: 8,
+        content: ""
+        //width: 20,
+        //height: 10
     });
 
-    screen.append(questionElement);
-    questionElement.append(inputElement);
-    questionElement.append(answerElement);
+    //containerElement.append(questionElement);
+    screen.append(containerElement);
+    containerElement.append(questionElement);
+    containerElement.append(inputElement);
+    containerElement.append(answerElement);
+    // questionElement.append(inputElement);
+    // questionElement.append(answerElement);
 
     return {screen, questionElement, inputElement, answerElement};
 }
