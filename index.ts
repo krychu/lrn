@@ -18,147 +18,103 @@ interface Card {
 	  goodCnt: number;
 };
 
+// State
 const {screen, questionElement, inputElement, answerElement} = createUI();
-let step: "question" | "bad-answer" | "good-answer" | "end" = "question";
+let step: "start" | "question" | "bad-answer" | "good-answer" | "end" = "start";
 const cards = readCards("cards/german.txt");
-let card: Card = cards[0];
+let card: Card | null = cards[0];
+const requiredGoodCnt = 2;
 let answer: string = "";
-nextCard();
 
-// input.on("submit", (a) => {
-//     // input.setValue("");
-//     // screen.render();
-//     answer = a;
-//     // console.log("here1");
-//     // if (a === card.answer) {
-//     //     card.goodCnt++;
-//     //     renderGoodAnswer();
-//     //     step = "good-answer";
-//     // } else {
-//     //     renderBadAnswer();
-//     //     step = "bad-answer";
-//     // }
-// });
-
-// screen.on("keypress", (ch, key) => {
-//     if (step === "question" && key.name === "return") {
-//         if (answer === card.answer) {
-//             step = "good-answer";
-//             card.goodCnt++;
-//             render();
-//         } else {
-//             step = "bad-answer";
-//             render();
-//         }
-//     } else if ((step === "good-answer" || step === "bad-answer") && key.name === "return") {
-//         step = "question";
-//         nextCard();
-//         render();
-//     }
-// });
-
-// good
+// This is called before `return` handler, so the `answer`
+// is set when `gotoNext` is called.
 inputElement.on("submit", text => (answer = text));
-// This will be called AFTER submit above
-// screen.key("return", () => {
-//     if (step === "question") {
-//         processAnswer();
-//     } else if (step === "bad-answer" || step === "good-answer") {
-//         nextCard();
-//     }
-// });
-screen.key("return", nextStep);
+inputElement.key("")HERE
+screen.key("return", gotoNext);
+screen.key(["escape", "q", "C-c"], (ch, key) => {
+    console.log("haha");
+    return process.exit(0);
+});
+
+gotoNext();
 
 // input.readInput(() => {});
-screen.render();
-inputElement.focus();
-//input.focus();
+// screen.render();
 
-function processAnswer() {
-    if (answer.toLowerCase() === card.answer.toLowerCase()) {
-        step = "good-answer";
-        card.goodCnt++;
-        inputElement.style.fg = "green";
-    } else {
-        step = "bad-answer";
-        inputElement.style.fg = "red";
+// function processReturn()
+function gotoNext() {
+    const steps = [gotoQuestion, gotoGoodAnswer, gotoBadAnswer, gotoEnd];
+    for (const step of steps) {
+        if (step()) {
+            return;
+        }
     }
-    screen.render();
 }
 
-function processAnswer() {
-    gotoGoodAnswer() || gotoBadAnswer();
-    // if (answer.toLowerCase() === card.answer.toLowerCase()) {
-    //     gotoGoodAnswer();
-    // } else {
-    //     gotoBadAnswer();
-    // }
+function gotoQuestion() {
+    if ((step === "start" || step === "good-answer" || step === "bad-answer") && hasMoreCards()) {
+        step = "question";
+        card = nextCard() as Card;
+        inputElement.style.fg = "white";
+        inputElement.setValue("");
+        questionElement.setContent(card.question);
+        answerElement.hide();
+        inputElement.focus();
+        screen.render();
+        return true;
+    }
+    return false;
 }
 
 function gotoGoodAnswer() {
-    if (answer.toLowerCase() !== card.answer.toLowerCase()) {
-        return false;
+    if (step === "question" && card && isAnswerCorrect()) {
+        step = "good-answer";
+        card.goodCnt++;
+        inputElement.style.fg = "green";
+        screen.render();
+        // or updateUI();
+        return true;
     }
-    step = "good-answer";
-    HERE
+    return false;
 }
 
-function nextCard() {
+function gotoBadAnswer() {
+    if (step === "question" && card && !isAnswerCorrect()) {
+        step = "bad-answer";
+        inputElement.style.fg = "red";
+        answerElement.setContent(card.answer);
+        answerElement.show();
+        screen.render();
+        return true;
+    }
+    return false;
+}
+
+function gotoEnd() {
+    if ((step === "good-answer" || step === "bad-answer") && !hasMoreCards()) {
+        step = "end";
+        card = null;
+        process.exit();
+        return true;
+    }
+    return false;
+}
+
+function nextCard(): Card | null {
     const candidateCards = cards.filter(card => card.goodCnt < requiredGoodCnt);
-
-    if (candidateCards.length) {
-        card = candidateCards[Math.floor(Math.random() * candidateCards.length)];
-    } else {
-        step = "end"
+    if (!candidateCards.length) {
+        return null;
     }
+    return candidateCards[Math.floor(Math.random() * candidateCards.length)];
 }
 
-// new idea
-function nextStep() {
-    if (step === "question") {
-        if (answer.toLowerCase() === card.answer.toLowerCase()) {
-            step = "good-answer";
-        } else {
-            step = "bad-answer";
-        }
-    } else if (step === "good-answer" || step === "bad-answer") {
-        step = "question";
-    }
+function hasMoreCards(): boolean {
+    return nextCard() != null;
 }
 
-function nextStep() {
-    if (step === "question") {
-        processAnswer();
-    } else if (step === "good-answer" || step === "bad-answer") {
-        nextCard();
-    }
+function isAnswerCorrect(): boolean {
+    return answer.toLowerCase() === card?.answer.toLowerCase();
 }
-
-// function render() {
-    
-// }
-
-// function stepQuestion() {
-// }
-
-// function renderGoodAnswer() {
-//     //
-// }
-
-// function renderBadAnswer() {
-//     answer.setContent(card.answer);
-//     answer.show();
-//     screen.render();
-// }
-
-// function nextCard() {
-//     card = cards.filter(card => card.goodCnt<2)[0];
-//     answer.hide();
-//     input.setValue("");
-//     question.setContent(card.question);
-//     input.focus();
-//     screen.render();
-// }
 
 function createUI() {
     const screen = blessed.screen({
@@ -188,10 +144,6 @@ function createUI() {
                 bg: "green"
             }
         }
-    });
-
-    screen.key(["escape", "q", "C-c"], (ch, key) => {
-        return process.exit(0);
     });
 
     const inputElement = blessed.textbox({
@@ -264,9 +216,9 @@ function readCards(filename: string): Card[] {
 //input.focus();
 //input.readInput(function() {});
 
-inputElement.key(["C-c"], (ch, key) => {
-    return process.exit(0);
-});
+// inputElement.key(["C-c"], (ch, key) => {
+//     return process.exit(0);
+// });
 
 // input.on("submit", (a) => {input.setValue(""); screen.render()});
 // //input.focus();
