@@ -3,16 +3,69 @@ type Step = Question | Answer;
 
 const [step, setStep] = useState(null);
 
-function onReturn() {
-    if (isQuestionStep()) {
-        gotoAnswerStep();
-    } else if (isAnswerStep()) {
-        if (hasMoreCards()) {
-            gotoQuestionStep();
-        } else {
-            gotoEndStep();
-        }
+////////////////////////////////////////////////////////////////////////////////
+
+useInput((input, key) => {
+    if (step.type === "question") {
+        useInputQuestionStep(input, key, setStep);
+    } else if (step.type === "answer") {
+        useInputAnswerStep(input, key, setStep);
     }
+});
+
+function useInputQuestionStep(input, key, setStep) {
+    if (key.return) {
+        //gotoGoodAnswerStep() || gotoBadAnswerStep();
+        gotoAnswerStep(setStep);
+    } else {
+        step.answer += input;
+    }
+}
+
+function useInputAnswerStep(input, key, setStep) {
+    if (key.return) {
+        hasMoreCards() ? gotoQuestionStep(setStep) : gotoEndStep(setStep);
+    }
+}
+
+function gotoAnswerStep(setStep) {
+    const answerStep = {
+        type: "answer",
+        card: step.card,
+        isAnswerGood: isAnswerGood()
+    };
+    if (answerStep.isAnswerGood) {
+        answerStep.card.goodCnt++;
+    }
+    // set
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+function useInputGotoGoodAnswerStep(input, key) {
+    if (step.type === "question" && key.return && isAnswerGood()) {
+        step = {};
+        return true;
+    }
+    return false;
+}
+
+function useInputGotoBadAnswerStep(input, key) {
+    if (step.type === "question" && key.return && !isAnswerGood()) {
+        step = {};
+        return true;
+    }
+    return false;
+}
+
+function useInputQuestionStep(input, key) {
+    if (step.type === "question" && !key.return) {
+        step.answer += input;
+        return true;
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +79,7 @@ useInput((input, key) => {
 });
 
 function gotoNextStep() {
-    const steps = [gotoQuestionStep, gotoAnswerStep, gotoEndStep];
+    const steps = [gotoQuestionStep, gotoGoodAnswerStep, gotoBadAnswerStep, gotoEndStep];
     for (const step of steps) {
         if (step()) {
             return;
@@ -80,3 +133,17 @@ useInput((input, key) => {
     }
 });
 
+////////////////////////////////////////////////////////////////////////////////
+
+// Step condition and content disjoint
+function onReturn() {
+    if (isQuestionStep()) {
+        gotoAnswerStep();
+    } else if (isAnswerStep()) {
+        if (hasMoreCards()) {
+            gotoQuestionStep();
+        } else {
+            gotoEndStep();
+        }
+    }
+}

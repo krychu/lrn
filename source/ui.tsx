@@ -23,6 +23,19 @@ import { useScreenSize } from './hooks/useScreenSize';
    }
  */
 
+interface QuestionStep {
+    type: "question";
+    card: Card;
+    answer: string;
+};
+
+interface AnswerStep {
+    type: "answer";
+    card: Card;
+    answer: string;
+    isAnswerGood: boolean;
+} HERE
+
 type Step = "question" | "good-answer" | "bad-answer" | "end";
 
 const enterAltScreenCommand = `\x1b[?1049h`;
@@ -51,7 +64,56 @@ const App: FC<{cards: Card[], goodCnt: number}> = ({cards = [], goodCnt = 1}) =>
 
 	  /* const [progress, setProgress] = useState({cardCnt: cards.length, answeredCnt: 0}); */
 
-	  const getNextCard = () => {
+    useInput((input, key) => {
+        if (step.type === "question") {
+            useInputQuestionStep(input, key);
+        } else if (step.type === "answer") {
+            useInputAnswerStep(input, key);
+        }
+    });
+
+    const useInputQuestionStep = (input: string, key: any) => {
+        if (key.return) {
+            gotoAnswerStep();
+        } else {
+            step.answer += input;
+        }
+    };
+
+    const useInputAnswerStep = (input: string, key: any) => {
+        if (key.return) {
+            hasMoreCards() ? gotoQuestionStep() : gotoEndStep();
+        }
+    };
+
+    const gotoAnswerStep = () => {
+        const answerStep = {
+            type: "answer",
+            isAnswerGood: isAnswerGood(),
+            card: step.card
+        };
+        if (answerStep.isAnswerGood) {
+            answerStep.card.goodCnt++;
+        }
+        setStep(answerStep);
+    };
+
+    const gotoQuestionStep = () => {
+        const quesitonStep = {
+            type: "question",
+            answer: "",
+            card: getNextCard()
+        };
+        setStep(questionStep);
+    };
+
+    const gotoEndStep = () => {
+        const endStep = {
+            type: "end"
+        };
+    };
+
+    const getNextCard = () => {
 		    const candidateCards = allCards.filter(card => card.goodCnt < goodCnt);
 		    if (!candidateCards.length) {
 			      return null;
@@ -59,6 +121,13 @@ const App: FC<{cards: Card[], goodCnt: number}> = ({cards = [], goodCnt = 1}) =>
 		    const idx = Math.floor(Math.random() * candidateCards.length);
 		    return candidateCards[idx];
 	  };
+
+    const hasMoreCards = () => {
+        return !!allCards.filter(card => card.goodCnt < goodCnt).length;
+    };
+
+    const isAnswerGood
+
 
 	  const questionInput = (input: string, key: any) => {
 		    if (key.return) {
