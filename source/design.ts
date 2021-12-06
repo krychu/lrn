@@ -5,7 +5,13 @@ const [step, setStep] = useState(null);
 
 function onReturn() {
     if (isQuestionStep()) {
-        
+        gotoAnswerStep();
+    } else if (isAnswerStep()) {
+        if (hasMoreCards()) {
+            gotoQuestionStep();
+        } else {
+            gotoEndStep();
+        }
     }
 }
 
@@ -13,7 +19,7 @@ function onReturn() {
 
 useInput((input, key) => {
     if (key.return) {
-        nextStep();
+        gotoNextStep();
     } else if (isQuestionStep()) {
         step.answer += input;
     }
@@ -33,6 +39,23 @@ function gotoQuestionStep() {
 
 // problem, how do we pass answer? through step
 function gotoAnswerStep() {
+    //if (isQuestionStep()) 
+}
+
+function onReturn() {
+    if (isQuestionStep()) {
+        onReturnInQuestionStep();
+    } else if (isAnswerStep()) {
+        onReturnInAnswerStep();
+    }
+}
+
+function onReturnInQuestionStep() {
+    
+}
+
+function gotoEndStep() {
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
