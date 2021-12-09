@@ -23,20 +23,29 @@ import { useScreenSize } from './hooks/useScreenSize';
    }
  */
 
-interface QuestionStep {
-    type: "question";
-    card: Card;
-    answer: string;
+interface ShowCardStep {
+    step: "show-card";
+    cardIdx: number;
+    userInput: string;
 };
 
-interface AnswerStep {
-    type: "answer";
-    card: Card;
-    answer: string;
-    isAnswerGood: boolean;
-} HERE
+interface GoodAnswerStep {
+    step: "good-answer";
+    cardIdx: number;
+};
 
-type Step = "question" | "good-answer" | "bad-answer" | "end";
+interface BadAnswerStep {
+    step: "bad-answer";
+    cardIdx: number;
+};
+
+interface EndStep {
+    step: "end";
+};
+
+type Step = ShowCardStep | GoodAnswerStep | BadAnswerStep | EndStep;
+
+//type Step = "question" | "good-answer" | "bad-answer" | "end";
 
 const enterAltScreenCommand = `\x1b[?1049h`;
 const leaveAltScreenCommand = `\x1b[?1049l`;
@@ -72,15 +81,15 @@ const App: FC<{cards: Card[], goodCnt: number}> = ({cards = [], goodCnt = 1}) =>
         }
     });
 
-    const useInputQuestionStep = (input: string, key: any) => {
+    const useInput_ShowCard = (input: string, key: any) => {
         if (key.return) {
-            gotoAnswerStep();
+            isAnswerGood() ? gotoAnswerStep();
         } else {
-            step.answer += input;
+            step.userInput += input;
         }
     };
 
-    const useInputAnswerStep = (input: string, key: any) => {
+    const useInput_Answer = (input: string, key: any) => {
         if (key.return) {
             hasMoreCards() ? gotoQuestionStep() : gotoEndStep();
         }
