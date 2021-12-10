@@ -1,197 +1,98 @@
-import React, {FC, useState, useEffect} from 'react';
+import React, {FC, useState} from 'react';
 import {Text, Box, useInput, useApp} from 'ink';
 import { Card } from "./cli";
 import chalk from "chalk";
 import { useScreenSize } from './hooks/useScreenSize';
 
-/*
-   {
-   upArrow: false,
-   downArrow: false,
-   leftArrow: false,
-   rightArrow: false,
-   pageDown: false,
-   pageUp: false,
-   return: false,
-   escape: false,
-   ctrl: true,
-   shift: false,
-   tab: false,
-   backspace: false,
-   delete: false,
-   meta: false
-   }
- */
+type Step = "question" | "good-answer" | "bad-answer" | "end";
 
-interface ShowCardStep {
-    step: "show-card";
-    cardIdx: number;
-    userInput: string;
+interface AppParams {
+    cards: Card[];
+    requiredGoodCnt: number;
 };
 
-interface GoodAnswerStep {
-    step: "good-answer";
-    cardIdx: number;
-};
-
-interface BadAnswerStep {
-    step: "bad-answer";
-    cardIdx: number;
-};
-
-interface EndStep {
-    step: "end";
-};
-
-type Step = ShowCardStep | GoodAnswerStep | BadAnswerStep | EndStep;
-
-//type Step = "question" | "good-answer" | "bad-answer" | "end";
-
-const enterAltScreenCommand = `\x1b[?1049h`;
-const leaveAltScreenCommand = `\x1b[?1049l`;
-
-export const enterFullscreen = (): void => void process.stdout.write(enterAltScreenCommand);
-export const exitFullscreen = (): void => void process.stdout.write(leaveAltScreenCommand);
-
-/* const App: FC<{cards2: Card[]}> = ({cards2 = []}) => { */
-const App: FC<{cards: Card[], goodCnt: number}> = ({cards = [], goodCnt = 1}) => {
+const App: FC<AppParams> = (params: AppParams) => {
 	  const {exit} = useApp();
 
+    const requiredGoodCnt = params.requiredGoodCnt;
     const { width, height } = useScreenSize();
 
-	  /* const [cards, setCards] = useState(_cards); */
-
-	  //const [card] = useState(cards[0] as Card);
-	  /* const [input, setInput] = useState(""); */
-	  //const [text, setText] = useState("");
     const [userInput, setUserInput] = useState("");
-	  //const [card] = useState(cards[0] as Card);
-	  const [allCards] = useState(cards);
-	  //const [cardIdx, setCardIdx] = useState(0);
-	  const [step, setStep] = useState("question" as Step)
-	  const [card, setCard] = useState(cards[0] as Card);
-
+	  const [cards] = useState(params.cards);
+    const [step, setStep] = useState<Step>("question");
+	  const [card, setCard] = useState<Card | null>(getNextCard());
 	  /* const [progress, setProgress] = useState({cardCnt: cards.length, answeredCnt: 0}); */
 
     useInput((input, key) => {
-        if (step.type === "question") {
+        if (key.escape) {
+            //exitFullscreen();
+            exit();
+        }
+
+        if (step === "question") {
             useInputQuestionStep(input, key);
-        } else if (step.type === "answer") {
+        } else if (step === "good-answer" || step === "bad-answer") {
             useInputAnswerStep(input, key);
         }
     });
 
-    const useInput_ShowCard = (input: string, key: any) => {
+    // Handle input during the question step
+    function useInputQuestionStep(input: string, key: any) {
         if (key.return) {
-            isAnswerGood() ? gotoAnswerStep();
+            isAnswerGood() ? gotoGoodAnswerStep() : gotoBadAnswerStep();
+        } else if (key.backspace || key.delete) {
+            setUserInput(userInput.slice(0, userInput.length-1));
         } else {
-            step.userInput += input;
+            setUserInput(userInput + input);
         }
     };
 
-    const useInput_Answer = (input: string, key: any) => {
+    // Handle input during the good-answer and bad-answer steps
+    function useInputAnswerStep(_input: string, key: any) {
         if (key.return) {
             hasMoreCards() ? gotoQuestionStep() : gotoEndStep();
         }
     };
 
-    const gotoAnswerStep = () => {
-        const answerStep = {
-            type: "answer",
-            isAnswerGood: isAnswerGood(),
-            card: step.card
-        };
-        if (answerStep.isAnswerGood) {
-            answerStep.card.goodCnt++;
+    function gotoGoodAnswerStep() {
+        if (card) {
+            card.goodCnt++;
         }
-        setStep(answerStep);
+        setStep("good-answer");
     };
 
-    const gotoQuestionStep = () => {
-        const quesitonStep = {
-            type: "question",
-            answer: "",
-            card: getNextCard()
-        };
-        setStep(questionStep);
+    function gotoBadAnswerStep() {
+        setStep("bad-answer");
     };
 
-    const gotoEndStep = () => {
-        const endStep = {
-            type: "end"
-        };
+    function gotoQuestionStep() {
+        setCard(getNextCard());
+        setStep("question");
     };
 
-    const getNextCard = () => {
-		    const candidateCards = allCards.filter(card => card.goodCnt < goodCnt);
+    function gotoEndStep() {
+        setStep("end");
+    };
+
+    function getNextCard(): Card | null {
+		    const candidateCards = cards.filter(card => card.goodCnt < requiredGoodCnt);
 		    if (!candidateCards.length) {
 			      return null;
 		    }
 		    const idx = Math.floor(Math.random() * candidateCards.length);
-		    return candidateCards[idx];
+        const card = candidateCards[idx];
+        return card ? card : null;
 	  };
 
-    const hasMoreCards = () => {
-        return !!allCards.filter(card => card.goodCnt < goodCnt).length;
+    function hasMoreCards() {
+        return !!cards.filter(card => card.goodCnt < requiredGoodCnt).length;
     };
 
-    const isAnswerGood
+    function isAnswerGood() {
+        return userInput.toLowerCase() === card?.answer.toLowerCase();
+    };
 
-
-	  const questionInput = (input: string, key: any) => {
-		    if (key.return) {
-			      if (userInput.toLowerCase() === card.answer.toLowerCase()) {
-				        //const newCards = [...cards];
-				        card.goodCnt++;
-				        //setCards(newCards);
-				        setStep("good-answer");
-			      } else {
-				        setStep("bad-answer");
-			      }
-			      return;
-		    } else if (key.delete) {
-			      setUserInput(userInput.slice(0, userInput.length-1));
-			      return;
-		    }
-		    setUserInput(userInput + input);
-	  };
-
-	  const answerInput = (_: string, key: any) => {
-		    if (key.return) {
-			      const nextCard = getNextCard();
-			      setUserInput("");
-			      if (nextCard) {
-				        setCard(nextCard);
-				        setStep("question");
-			      } else {
-				        setStep("end");
-			      }
-		    }
-	  };
-
-	  useInput((input, key) => {
-		    if (input === 'q') {
-            //exitFullscreen();
-			      exit();
-		    }
-
-		    switch (step) {
-			      case "question":
-				        questionInput(input, key);
-				        break;
-		        case "bad-answer":
-			      case "good-answer":
-				        answerInput(input, key);
-				        break;
-			      default:
-				        throw new Error("?");
-		    }
-	  });
-
-	  const correctAnswer = step === "bad-answer" ? <Box paddingX={1}>
-		    <Text color="green">{card.answer}</Text>
-	  </Box> : null;
-
+    const hint = step === "bad-answer" ? card?.answer : "";
     let userInputColor = "white";
     let userInputText = userInput;
     if (step === "question") {
@@ -201,56 +102,27 @@ const App: FC<{cards: Card[], goodCnt: number}> = ({cards = [], goodCnt = 1}) =>
     } else if (step === "good-answer") {
         userInputColor = "green";
     }
-
-    //enterFullscreen();
+    const question = card?.question;
+    //const question = "super long question blah blah dsfkjdslk jfdskljf dklsjf ksdjfkdsjf ldsjflksdjf ljsdf kdsjflkjds lfjsdklf jdslk fjdlskj lksdjf lkdsjf klsdjf lkjsdlfkjdskfj akjkfj jsdflkjdskl fjdalkjf lkdajf lkadjfkljdalkf jdalkf jadlksjf lkdj lfkjdalkfjdalkfj ldakj flkadsjf lkadjf lkjda kfljdalkf jdklafj lkadjf lkdajf kljadslkfjdlk fjldk jdkl jflkdaj flkdasj flkjdf";
 
 	  return <Box justifyContent="center" width={width} height={height}>
 		    <Box justifyContent="center" flexBasis={60} minWidth={20} flexDirection="column">
 			      <Box flexDirection="column" borderStyle="single">
 				        <Box paddingX={1}>
-					          <Text>{card.question}</Text>
+					          <Text>{question}</Text>
 				        </Box>
 				        <Box paddingX={1} paddingTop={1} height={2}>
 					          <Text color={userInputColor}>{userInputText}</Text>
 				        </Box>
+                <Box marginBottom={-1}><Text>dkjfdskfj</Text></Box>
 			      </Box>
-			      {correctAnswer}
+
+            <Box paddingX={2} height={1}>
+                <Text color="green">{hint}</Text>
+            </Box>
 		    </Box>
 	  </Box>
 };
-
-export const FullScreen: FC = (props) => {
- 	  const [size, setSize] = useState({
- 		    columns: process.stdout.columns,
- 		    rows: process.stdout.rows,
- 	  });
-
- 	  useEffect(() => {
- 		    function onResize() {
- 			      setSize({
- 				        columns: process.stdout.columns,
- 				        rows: process.stdout.rows,
- 			      });
- 		    }
-
- 		    process.stdout.on("resize", onResize);
- 		    process.stdout.write("\x1b[?1049h");
- 		    return () => {
- 			      process.stdout.off("resize", onResize);
- 			      process.stdout.write("\x1b[?1049l");
- 		    };
- 	  }, []);
-
- 	  return (
- 		    <Box width={size.columns} height={size.rows}>
- 			      {props.children}
- 		    </Box>
- 	  );
-};
-
-/* function isCorrect(question: string, answer: string): boolean {
- * 	return question.toLowerCase() === answer.toLowerCase();
- * } */
 
 module.exports = App;
 export default App;

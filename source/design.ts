@@ -147,3 +147,97 @@ function onReturn() {
         }
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+export const FullScreen: FC = (props) => {
+ 	  const [size, setSize] = useState({
+ 		    columns: process.stdout.columns,
+ 		    rows: process.stdout.rows,
+ 	  });
+
+ 	  useEffect(() => {
+ 		    function onResize() {
+ 			      setSize({
+ 				        columns: process.stdout.columns,
+ 				        rows: process.stdout.rows,
+ 			      });
+ 		    }
+
+ 		    process.stdout.on("resize", onResize);
+ 		    process.stdout.write("\x1b[?1049h");
+ 		    return () => {
+ 			      process.stdout.off("resize", onResize);
+ 			      process.stdout.write("\x1b[?1049l");
+ 		    };
+ 	  }, []);
+
+ 	  return (
+ 		    <Box width={size.columns} height={size.rows}>
+ 			      {props.children}
+ 		    </Box>
+ 	  );
+};
+
+/* function isCorrect(question: string, answer: string): boolean {
+ * 	return question.toLowerCase() === answer.toLowerCase();
+ * } */
+
+
+/*
+  {
+  upArrow: false,
+  downArrow: false,
+  leftArrow: false,
+  rightArrow: false,
+  pageDown: false,
+  pageUp: false,
+  return: false,
+  escape: false,
+  ctrl: true,
+  shift: false,
+  tab: false,
+  backspace: false,
+  delete: false,
+  meta: false
+  }
+*/
+
+
+// const FullScreen: FC = (props) => {
+// 	const [size, setSize] = useState({
+// 		columns: process.stdout.columns,
+// 		rows: process.stdout.rows,
+// 	});
+
+// 	useEffect(() => {
+// 		function onResize() {
+// 			setSize({
+// 				columns: process.stdout.columns,
+// 				rows: process.stdout.rows,
+// 			});
+// 		}
+
+// 		process.stdout.on("resize", onResize);
+// 		process.stdout.write("\x1b[?1049h");
+// 		return () => {
+// 			process.stdout.off("resize", onResize);
+// 			process.stdout.write("\x1b[?1049l");
+// 		};
+// 	}, []);
+
+// 	return (
+// 		<Box width={size.columns} height={size.rows}>
+// 			{props.children}
+// 		</Box>
+// 	);
+// };
+
+// const enterAltScreenCommand = "\x1b[?1049h";
+// const leaveAltScreenCommand = "\x1b[?1049l";
+// process.stdout.write(enterAltScreenCommand);
+// process.on("exit", () => {
+//   process.stdout.write(leaveAltScreenCommand);
+// });
+
+//render(<App name={cli.flags.name}/>);

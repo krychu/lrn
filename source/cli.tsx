@@ -76,43 +76,6 @@ function readCards(filename: string): Card[] {
 
 const cards = readCards("cards/german.txt");
 
-// const FullScreen: FC = (props) => {
-// 	const [size, setSize] = useState({
-// 		columns: process.stdout.columns,
-// 		rows: process.stdout.rows,
-// 	});
-
-// 	useEffect(() => {
-// 		function onResize() {
-// 			setSize({
-// 				columns: process.stdout.columns,
-// 				rows: process.stdout.rows,
-// 			});
-// 		}
-
-// 		process.stdout.on("resize", onResize);
-// 		process.stdout.write("\x1b[?1049h");
-// 		return () => {
-// 			process.stdout.off("resize", onResize);
-// 			process.stdout.write("\x1b[?1049l");
-// 		};
-// 	}, []);
-
-// 	return (
-// 		<Box width={size.columns} height={size.rows}>
-// 			{props.children}
-// 		</Box>
-// 	);
-// };
-
-// const enterAltScreenCommand = "\x1b[?1049h";
-// const leaveAltScreenCommand = "\x1b[?1049l";
-// process.stdout.write(enterAltScreenCommand);
-// process.on("exit", () => {
-//   process.stdout.write(leaveAltScreenCommand);
-// });
-
-//render(<App name={cli.flags.name}/>);
 render(
-		<App cards={cards} goodCnt={2} />
+		<App cards={cards} requiredGoodCnt={2} />
 );
