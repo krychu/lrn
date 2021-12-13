@@ -3,7 +3,7 @@
 import fs from "fs";
 import path from "path";
 import React, {useState} from 'react';
-import {Text, Box, useInput, useApp, render} from 'ink';
+import {Text, Box, Spacer, useInput, useApp, render} from 'ink';
 import chalk from "chalk";
 import { useScreenSize } from './hooks/useScreenSize';
 
@@ -12,9 +12,38 @@ function usage() {
 
     console.log(`
   Usage
-    $ ${script} file.txt
+    $ ${script} [OPTIONS] file.txt
 
-  The format of the file is as follows:
+
+  Options
+
+    -m match | cards     Mode of learning. In the `match` mode you type in
+                         answer to a question, which is then compared to
+                         the correct answer. In the `cards` mode you flip
+                         between a question and the correct answer, and
+                         decide yourself whether you know the answer well.
+
+                         As an example, `match` is good for learning foreign
+                         words, while `cards` for learning definitions and
+                         more complex concepts.
+
+    -r N                 Required number of times a question must be
+                         answered correctly. Default: 1.
+
+
+  Keybindings
+
+    C-s           Show/hide status bar. Hidden by default.
+    C-c or ESC    Exit.
+
+    Unique to `cards` mode:
+
+    TAB or f    Flip the card.
+    y           Accept the card as answered correctly.
+    n           Accept the card as answered in
+
+
+  The format of the file with questions is as follows:
     question1
     answer1
 
@@ -22,6 +51,9 @@ function usage() {
     answer2
 
     ...
+
+  Author
+    Krystian Samp (samp.krystian@gmail.com)
 `);
 
     process.exit(0);
@@ -35,9 +67,13 @@ const filename = process.argv[2] as string;
 const cards = readCards(filename);
 
 render(
-		<App cards={cards} requiredGoodCnt={2} />
+		<AppAnswerMatch filename={filename} cards={cards} requiredGoodCnt={2} showStatusBar={false} />
 );
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// App: Match
+//
 ////////////////////////////////////////////////////////////////////////////////
 
 type Step = "question" | "good-answer" | "bad-answer" | "end";
@@ -49,14 +85,16 @@ export interface Card {
 };
 
 interface AppParams {
+    filename: string;
     cards: Card[];
     requiredGoodCnt: number;
+    showStatusBar: boolean;
 };
 
-//const App: FC<AppParams> = (params: AppParams) => {
-function App(params: AppParams) {
+function AppMatch(params: AppParams) {
 	  const {exit} = useApp();
 
+    const filename = params.filename;
     const requiredGoodCnt = params.requiredGoodCnt;
     const { width, height } = useScreenSize();
 
@@ -64,12 +102,17 @@ function App(params: AppParams) {
 	  const [cards] = useState(params.cards);
     const [step, setStep] = useState<Step>("question");
 	  const [card, setCard] = useState<Card | null>(getNextCard());
+    const [showStatusBar, setShowStatusBar] = useState(params.showStatusBar);
 	  /* const [progress, setProgress] = useState({cardCnt: cards.length, answeredCnt: 0}); */
 
     useInput((input, key) => {
         if (key.escape) {
-            //exitFullscreen();
             exit();
+        } else if (key.ctrl && input === "s") {
+            setShowStatusBar(!showStatusBar);
+            return;
+        } else if (key.ctrl || key.upArrow || key.downArrow || key.leftArrow || key.rightArrow) {
+            return;
         }
 
         if (step === "question") {
@@ -88,52 +131,57 @@ function App(params: AppParams) {
         } else {
             setUserInput(userInput + input);
         }
-    };
+    }
 
     // Handle input during the good-answer and bad-answer steps
     function useInputAnswerStep(_input: string, key: any) {
         if (key.return) {
             hasMoreCards() ? gotoQuestionStep() : gotoEndStep();
         }
-    };
+    }
 
     function gotoGoodAnswerStep() {
         if (card) {
             card.goodCnt++;
         }
         setStep("good-answer");
-    };
+    }
 
     function gotoBadAnswerStep() {
         setStep("bad-answer");
-    };
+    }
 
     function gotoQuestionStep() {
         setCard(getNextCard());
+        setUserInput("");
         setStep("question");
-    };
+    }
 
     function gotoEndStep() {
         setStep("end");
-    };
+    }
 
     function getNextCard(): Card | null {
-		    const candidateCards = cards.filter(card => card.goodCnt < requiredGoodCnt);
+		    const candidateCards = getCardCandidates();
 		    if (!candidateCards.length) {
 			      return null;
 		    }
 		    const idx = Math.floor(Math.random() * candidateCards.length);
         const card = candidateCards[idx];
         return card ? card : null;
-	  };
+	  }
 
     function hasMoreCards() {
-        return !!cards.filter(card => card.goodCnt < requiredGoodCnt).length;
-    };
+        return !!getCardCandidates().length;
+    }
 
     function isAnswerGood() {
         return userInput.toLowerCase() === card?.answer.toLowerCase();
-    };
+    }
+
+    function getCardCandidates() {
+        return cards.filter(card => card.goodCnt < requiredGoodCnt);
+    }
 
     const hint = step === "bad-answer" ? card?.answer : "";
     let userInputColor = "white";
@@ -145,32 +193,258 @@ function App(params: AppParams) {
     } else if (step === "good-answer") {
         userInputColor = "green";
     }
-    const question = card?.question;
-    //const question = "super long question blah blah dsfkjdslk jfdskljf dklsjf ksdjfkdsjf ldsjflksdjf ljsdf kdsjflkjds lfjsdklf jdslk fjdlskj lksdjf lkdsjf klsdjf lkjsdlfkjdskfj akjkfj jsdflkjdskl fjdalkjf lkdajf lkadjfkljdalkf jdalkf jadlksjf lkdj lfkjdalkfjdalkfj ldakj flkadsjf lkadjf lkjda kfljdalkf jdklafj lkadjf lkdajf kljadslkfjdlk fjldk jdkl jflkdaj flkdasj flkjdf";
+    //const question = card?.question;
+    const question = "skdjflsd jflkjdslk jadlkfj ladjf ldhafk jdhaskf haldf kadjhf kjasdhf kdajshf kjdahsflkj hdaslkfj hdalkjfh lkdasjhf lkjdashf kljdahsflk jhadslkjfh asdljfh daskjfh kdsjahf kjdshfjhdfkh dkfh dskjhf jdshf jkdhsfjk hds jh jhfdkj hfjkdh fjdhk jfhdskjf h";
 
-	  return <Box justifyContent="center" width={width} height={height}>
-		    <Box justifyContent="center" flexBasis={60} minWidth={20} flexDirection="column">
-			      <Box flexDirection="column" borderStyle="single">
+    const cardsDoneCnt = cards.length - getCardCandidates().length;
+    const progress = `${cardsDoneCnt}/${cards.length}`;
+
+	  /* return <Box justifyContent="center" width={width} height={height}>
+		   <Box justifyContent="center" flexBasis={60} minWidth={20} flexDirection="column">
+			 <Box flexDirection="column" borderStyle="single">
+			 <Box paddingX={1}>
+			 <Text>{question}</Text>
+			 </Box>
+			 <Box paddingX={1} paddingTop={1} height={2}>
+			 <Text color={userInputColor}>{userInputText}</Text>
+			 </Box>
+     *             <Box alignSelf="flex-end" marginBottom={-1}><Text>{progress}</Text></Box>
+			 </Box>
+
+     *         <Box paddingX={2} height={1}>
+     *             <Text color="green">{hint}</Text>
+     *         </Box>
+		   </Box>
+
+     *     <Box>
+     *         <Text>Status bar</Text>
+     *     </Box>
+     * </Box> */
+
+    let statusBarElement = null;
+    if (showStatusBar) {
+        const text = ` ${filename} | ESC or C-c to exit | ${progress}`;
+        const filler = " ".repeat(width - text.length);
+        statusBarElement = <Box width="100%">
+            <Text backgroundColor="gray">{text}</Text>
+            <Text backgroundColor="gray">{filler}</Text>
+        </Box>;
+    }
+
+    // Progress shown as part of the card when status bar is hidden
+    let progressElement = showStatusBar ? null : <Box alignSelf="flex-end" marginBottom={-1}><Text>{progress}</Text></Box>;
+
+	  return <Box flexDirection="column" alignItems="center" justifyContent="center" width={width} height={height}>
+		{/* <Box justifyContent="center" flexBasis={60} minWidth={20} flexDirection="column"> */}
+        <Spacer />
+
+			      <Box width={60} flexDirection="column" borderStyle="single">
 				        <Box paddingX={1}>
 					          <Text>{question}</Text>
 				        </Box>
 				        <Box paddingX={1} paddingTop={1} height={2}>
 					          <Text color={userInputColor}>{userInputText}</Text>
 				        </Box>
-                <Box marginBottom={-1}><Text>dkjfdskfj</Text></Box>
+                {progressElement}
 			      </Box>
 
-            <Box paddingX={2} height={1}>
+            <Box width={60} paddingX={2} height={1}>
                 <Text color="green">{hint}</Text>
             </Box>
-		    </Box>
-	  </Box>
+
+            <Spacer />
+            {statusBarElement}
+		        {/* </Box> */}
+    </Box>
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+//
+// App: Cards
+//
+////////////////////////////////////////////////////////////////////////////////
+
+type CardSide = "front" | "back";
+
+function AppCards(params: AppParams) {
+	  const {exit} = useApp();
+
+    const filename = params.filename;
+    const requiredGoodCnt = params.requiredGoodCnt;
+    const { width, height } = useScreenSize();
+
+	  const [cards] = useState(params.cards);
+	  const [card, setCard] = useState<Card | null>(getNextCard());
+    const [cardSide, setCardSide] = useState<CardSide>("front");
+    const [step, setStep] = useState<Step>("question");
+    const [showStatusBar, setShowStatusBar] = useState(params.showStatusBar);
+	  /* const [progress, setProgress] = useState({cardCnt: cards.length, answeredCnt: 0}); */
+
+    useInput((input, key) => {
+        if (key.escape) {
+            exit();
+        } else if (key.ctrl && input === "s") {
+            setShowStatusBar(!showStatusBar);
+            return;
+        } else if (key.ctrl || key.upArrow || key.downArrow || key.leftArrow || key.rightArrow) {
+            return;
+        }
+
+        if (step === "question") {
+            useInputQuestionStep(input, key);
+        } else if (step === "good-answer" || step === "bad-answer") {
+            useInputAnswerStep(input, key);
+        }
+    });
+
+    // Handle input during the question step
+    function useInputQuestionStep(input: string, key: any) {
+        if (input === "f" || key.tab) {
+            setCardSide(!cardSide);
+            return;
+        } else if (input === "y") {
+            card.goodCnt++;
+            gotoQuestionStep();
+            return;
+        } else if (input === "n") {
+            gotoQuestionStep();
+            return;
+        }
+    }
+
+    // Handle input during the good-answer and bad-answer steps
+    function useInputAnswerStep(_input: string, key: any) {
+        if (key.return) {
+            hasMoreCards() ? gotoQuestionStep() : gotoEndStep();
+        }
+    }
+
+    function gotoGoodAnswerStep() {
+        if (card) {
+            card.goodCnt++;
+        }
+        setStep("good-answer");
+    }
+
+    function gotoBadAnswerStep() {
+        setStep("bad-answer");
+    }
+
+    function gotoQuestionStep() {
+        setCard(getNextCard());
+        setUserInput("");
+        setStep("question");
+    }
+
+    function gotoEndStep() {
+        setStep("end");
+    }
+
+    function getNextCard(): Card | null {
+		    const candidateCards = getCardCandidates();
+		    if (!candidateCards.length) {
+			      return null;
+		    }
+		    const idx = Math.floor(Math.random() * candidateCards.length);
+        const card = candidateCards[idx];
+        return card ? card : null;
+	  }
+
+    function hasMoreCards() {
+        return !!getCardCandidates().length;
+    }
+
+    function isAnswerGood() {
+        return userInput.toLowerCase() === card?.answer.toLowerCase();
+    }
+
+    function getCardCandidates() {
+        return cards.filter(card => card.goodCnt < requiredGoodCnt);
+    }
+
+    const hint = step === "bad-answer" ? card?.answer : "";
+    let userInputColor = "white";
+    let userInputText = userInput;
+    if (step === "question") {
+        userInputText += chalk.inverse(" ");
+    } else if (step === "bad-answer") {
+        userInputColor = "red";
+    } else if (step === "good-answer") {
+        userInputColor = "green";
+    }
+    //const question = card?.question;
+    const question = "skdjflsd jflkjdslk jadlkfj ladjf ldhafk jdhaskf haldf kadjhf kjasdhf kdajshf kjdahsflkj hdaslkfj hdalkjfh lkdasjhf lkjdashf kljdahsflk jhadslkjfh asdljfh daskjfh kdsjahf kjdshfjhdfkh dkfh dskjhf jdshf jkdhsfjk hds jh jhfdkj hfjkdh fjdhk jfhdskjf h";
+
+    const cardsDoneCnt = cards.length - getCardCandidates().length;
+    const progress = `${cardsDoneCnt}/${cards.length}`;
+
+	  /* return <Box justifyContent="center" width={width} height={height}>
+		   <Box justifyContent="center" flexBasis={60} minWidth={20} flexDirection="column">
+			 <Box flexDirection="column" borderStyle="single">
+			 <Box paddingX={1}>
+			 <Text>{question}</Text>
+			 </Box>
+			 <Box paddingX={1} paddingTop={1} height={2}>
+			 <Text color={userInputColor}>{userInputText}</Text>
+			 </Box>
+     *             <Box alignSelf="flex-end" marginBottom={-1}><Text>{progress}</Text></Box>
+			 </Box>
+
+     *         <Box paddingX={2} height={1}>
+     *             <Text color="green">{hint}</Text>
+     *         </Box>
+		   </Box>
+
+     *     <Box>
+     *         <Text>Status bar</Text>
+     *     </Box>
+     * </Box> */
+
+    let statusBarElement = null;
+    if (showStatusBar) {
+        const text = ` ${filename} | ESC or C-c to exit | ${progress}`;
+        const filler = " ".repeat(width - text.length);
+        statusBarElement = <Box width="100%">
+            <Text backgroundColor="gray">{text}</Text>
+            <Text backgroundColor="gray">{filler}</Text>
+        </Box>;
+    }
+
+    // Progress shown as part of the card when status bar is hidden
+    let progressElement = showStatusBar ? null : <Box alignSelf="flex-end" marginBottom={-1}><Text>{progress}</Text></Box>;
+
+	  return <Box flexDirection="column" alignItems="center" justifyContent="center" width={width} height={height}>
+		    {/* <Box justifyContent="center" flexBasis={60} minWidth={20} flexDirection="column"> */}
+        <Spacer />
+
+			  <Box width={60} flexDirection="column" borderStyle="single">
+				    <Box paddingX={1}>
+					      <Text>{question}</Text>
+				    </Box>
+				    <Box paddingX={1} paddingTop={1} height={2}>
+					      <Text color={userInputColor}>{userInputText}</Text>
+				    </Box>
+            {progressElement}
+			  </Box>
+
+        <Box width={60} paddingX={2} height={1}>
+            <Text color="green">{hint}</Text>
+        </Box>
+
+        <Spacer />
+        {statusBarElement}
+		    {/* </Box> */}
+    </Box>
+};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Utils
+//
+////////////////////////////////////////////////////////////////////////////////
 
 function readCards(filename: string): Card[] {
-	const text = fs.readFileSync(filename, {encoding: "utf8"});
+	  const text = fs.readFileSync(filename, {encoding: "utf8"});
 	const lines = text.split(/\n/);
 	const cards: Card[] = [];
 
