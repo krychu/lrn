@@ -17,15 +17,14 @@ function usage() {
 
   Options
 
-    -m match | cards     Mode of learning. In the `match` mode you type in
-                         answer to a question, which is then compared to
-                         the correct answer. In the `cards` mode you flip
-                         between a question and the correct answer, and
-                         decide yourself whether you know the answer well.
+    -m match | cards     Mode of learning. In the \`match\` mode you type in
+                         answer to a question. In the \`cards\` mode you flip
+                         between question and the correct answer, and
+                         decide yourself whether you knew it or not.
 
-                         As an example, `match` is good for learning foreign
-                         words, while `cards` for learning definitions and
-                         more complex concepts.
+                         As an example, \`match\` is good for learning foreign
+                         words, while \`cards\` is good for learning definitions
+                         and more complex concepts.
 
     -r N                 Required number of times a question must be
                          answered correctly. Default: 1.
@@ -36,7 +35,7 @@ function usage() {
     C-s           Show/hide status bar. Hidden by default.
     C-c or ESC    Exit.
 
-    Unique to `cards` mode:
+  Keybindings unique to \`cards\` mode:
 
     TAB or f    Flip the card.
     y           Accept the card as answered correctly.
@@ -59,16 +58,23 @@ function usage() {
     process.exit(0);
 }
 
-if (process.argv.length !== 3) {
-    usage();
-}
+
+const params = readParams();
+console.log(params);
+process.exit();
 
 const filename = process.argv[2] as string;
 const cards = readCards(filename);
 
-render(
-		<AppAnswerMatch filename={filename} cards={cards} requiredGoodCnt={2} showStatusBar={false} />
-);
+if (params.mode === "match") {
+    render(
+		    <AppMatch filename={params.filename} cards={cards} requiredGoodCnt={params.requiredGoodCnt} showStatusBar={false} />
+    );
+} else {
+    render(
+        <AppCards filename={params.filename} cards={cards} requiredGoodCnt={params.requiredGoodCnt} showStatusBar={false} />
+    );
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -483,4 +489,50 @@ function readCards(filename: string): Card[] {
 	}
 
 	return cards;
+}
+
+function readParams() {
+    if (process.argv.length < 3) {
+        usage();
+    }
+
+    const params = {
+        filename: null,
+        mode: "match",
+        requiredGoodCnt: 1
+    };
+
+    let i=2;
+    while(i < process.argv.length) {
+        const arg = process.argv[i];
+        if (arg === "-m") {
+            if (i+1 < process.argv.length) {
+                const nextArg = process.argv[i+1];
+                if (nextArg === "match" || nextArg === "cards") {
+                    params.mode = nextArg;
+                    i+=2;
+                    continue;
+                }
+            }
+            usage();
+        }
+        else if (arg === "-r") {
+            if (i+1 < process.argv.length) {
+                const nextArg = process.argv[i+1];
+                params.requiredGoodCnt = parseInt(nextArg) || 1;
+                i+=2;
+                continue;
+            }
+            usage();
+        }
+        else {
+            if (params.filename) {
+                usage();
+            }
+            params.filename = arg;
+            i+=1;
+        }
+    }
+
+    return params;
 }
