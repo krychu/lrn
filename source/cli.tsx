@@ -306,10 +306,10 @@ function AppCards(params: AppParams) {
     // Handle input during the question step
     function useInputQuestionStep(input: string, key: any) {
         if (input === "f" || key.tab) {
-            setCardSide(!cardSide);
+            setCardSide(cardSide ? "back" : "front");
             return;
         } else if (input === "y") {
-            card.goodCnt++;
+            (card as Card).goodCnt++;
             gotoQuestionStep();
             return;
         } else if (input === "n") {
@@ -323,17 +323,6 @@ function AppCards(params: AppParams) {
         if (key.return) {
             hasMoreCards() ? gotoQuestionStep() : gotoEndStep();
         }
-    }
-
-    function gotoGoodAnswerStep() {
-        if (card) {
-            card.goodCnt++;
-        }
-        setStep("good-answer");
-    }
-
-    function gotoBadAnswerStep() {
-        setStep("bad-answer");
     }
 
     function gotoQuestionStep() {
@@ -497,7 +486,7 @@ function readParams() {
     }
 
     const params = {
-        filename: null,
+        filename: "",
         mode: "match",
         requiredGoodCnt: 1
     };
@@ -532,6 +521,10 @@ function readParams() {
             params.filename = arg;
             i+=1;
         }
+    }
+
+    if (params.filename === "") {
+        usage();
     }
 
     return params;
