@@ -327,7 +327,6 @@ function AppCards(params: AppParams) {
 
     function gotoQuestionStep() {
         setCard(getNextCard());
-        setUserInput("");
         setStep("question");
     }
 
@@ -349,51 +348,16 @@ function AppCards(params: AppParams) {
         return !!getCardCandidates().length;
     }
 
-    function isAnswerGood() {
-        return userInput.toLowerCase() === card?.answer.toLowerCase();
-    }
-
     function getCardCandidates() {
         return cards.filter(card => card.goodCnt < requiredGoodCnt);
     }
 
-    const hint = step === "bad-answer" ? card?.answer : "";
-    let userInputColor = "white";
-    let userInputText = userInput;
-    if (step === "question") {
-        userInputText += chalk.inverse(" ");
-    } else if (step === "bad-answer") {
-        userInputColor = "red";
-    } else if (step === "good-answer") {
-        userInputColor = "green";
-    }
+    //const hint = step === "bad-answer" ? card?.answer : "";
     //const question = card?.question;
     const question = "skdjflsd jflkjdslk jadlkfj ladjf ldhafk jdhaskf haldf kadjhf kjasdhf kdajshf kjdahsflkj hdaslkfj hdalkjfh lkdasjhf lkjdashf kljdahsflk jhadslkjfh asdljfh daskjfh kdsjahf kjdshfjhdfkh dkfh dskjhf jdshf jkdhsfjk hds jh jhfdkj hfjkdh fjdhk jfhdskjf h";
 
     const cardsDoneCnt = cards.length - getCardCandidates().length;
     const progress = `${cardsDoneCnt}/${cards.length}`;
-
-	  /* return <Box justifyContent="center" width={width} height={height}>
-		   <Box justifyContent="center" flexBasis={60} minWidth={20} flexDirection="column">
-			 <Box flexDirection="column" borderStyle="single">
-			 <Box paddingX={1}>
-			 <Text>{question}</Text>
-			 </Box>
-			 <Box paddingX={1} paddingTop={1} height={2}>
-			 <Text color={userInputColor}>{userInputText}</Text>
-			 </Box>
-     *             <Box alignSelf="flex-end" marginBottom={-1}><Text>{progress}</Text></Box>
-			 </Box>
-
-     *         <Box paddingX={2} height={1}>
-     *             <Text color="green">{hint}</Text>
-     *         </Box>
-		   </Box>
-
-     *     <Box>
-     *         <Text>Status bar</Text>
-     *     </Box>
-     * </Box> */
 
     let statusBarElement = null;
     if (showStatusBar) {
@@ -416,15 +380,8 @@ function AppCards(params: AppParams) {
 				    <Box paddingX={1}>
 					      <Text>{question}</Text>
 				    </Box>
-				    <Box paddingX={1} paddingTop={1} height={2}>
-					      <Text color={userInputColor}>{userInputText}</Text>
-				    </Box>
             {progressElement}
 			  </Box>
-
-        <Box width={60} paddingX={2} height={1}>
-            <Text color="green">{hint}</Text>
-        </Box>
 
         <Spacer />
         {statusBarElement}
