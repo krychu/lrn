@@ -3,7 +3,7 @@
 // lrn
 //
 // Command line tool for learning by repetition repetition. It doesn't support
-// spacing, sophisticated algorithms, schedules, categories, tags, styles etc.
+// sophisticated spacing algorithms, schedules, categories, tags, styles etc.
 // You are given 0 opportunity to procrastinate, no tweaking knobs and whistles.
 // Even the deck file format makes .csv look complicated. Consequently, `lrn`
 // removes the last frontier between you and the damn thing you want to learn.
@@ -67,12 +67,12 @@ function usage() {
 
   Keybindings unique to \`cards\` mode:
 
-    TAB or f    Flip the card.
-    y           Accept the card as answered correctly.
-    n           Accept the card as answered in
+    f             Flip the card.
+    y             Accept the card as answered correctly.
+    n             Accept the card as answered wrong.
 
 
-  The format of the file with questions is as follows:
+  The format of the file is as follows:
     question1
     answer1
 
@@ -192,8 +192,8 @@ function AppMatch(params: Omit<AppParams, "mode">) {
             filler = " ".repeat(fillerCnt);
         }
         return <Box width="100%">
-            <Text color={STATUSBAR_COLOR} backgroundColor={STATUSBAR_BGCOLOR}>{text}</Text>
-            <Text backgroundColor={STATUSBAR_BGCOLOR}>{filler}</Text>
+            <Text color={statusBarColor} backgroundColor={statusBarBgColor}>{text}</Text>
+            <Text backgroundColor={statusBarBgColor}>{filler}</Text>
         </Box>;
     }
 
@@ -274,7 +274,7 @@ function AppCards(params: Omit<AppParams, "mode">) {
 
     // Handle input during the question step
     function useInputCardStep(input: string, key: any) {
-        if (input === "f" || key.tab) {
+        if (input === "f") {
             setCardSide(cardSide === "front" ? "back" : "front");
             return;
         } else if (input === "y" || input === "n") {
@@ -310,7 +310,7 @@ function AppCards(params: Omit<AppParams, "mode">) {
             filler = " ".repeat(fillerCnt);
         }
         return <Box width="100%">
-            <Text color={STATUSBAR_COLOR} backgroundColor={statusBarBgColor}>{text}</Text>
+            <Text color={statusBarColor} backgroundColor={statusBarBgColor}>{text}</Text>
             <Text backgroundColor={statusBarBgColor}>{filler}</Text>
         </Box>;
     }
@@ -461,7 +461,8 @@ function readParams(): AppParams {
     return params;
 }
 
-// TODO: Give credit to the author of this code
+// The `useScreenSize` hook code is from https://github.com/mordv/mnswpr
+// by mordv. Thank you!
 interface SizeType {
     width: number;
     height: number;
