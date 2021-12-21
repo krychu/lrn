@@ -1,6 +1,6 @@
 # lrn
 
-Command-line tool for learning by repetition repetition. <br><br>
+Command-line tool for learning by repetition repetition. <br>
 
 `lrn` doesn't support sophisticated spacing algorithms, schedules, categories, tags, styles etc. The final frontier between you and the thing you want to learn is removed. No last chance to procrastinate by tweaking knobs and whistles of the learning tool itself. You won't find refuge in "designing" your deck either; the input file format makes .csv look complicated. What's left is to learn, learn, and repeat.
 
