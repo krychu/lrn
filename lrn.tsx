@@ -2,7 +2,7 @@
 
 // lrn
 //
-// Command line tool for learning by repetition repetition. It doesn't support
+// Command-line tool for learning by repetition repetition. It doesn't support
 // sophisticated spacing algorithms, schedules, categories, tags, styles etc.
 // You are given 0 opportunity to procrastinate, no tweaking knobs and whistles.
 // Even the deck file format makes .csv look complicated. Consequently, `lrn`
@@ -273,7 +273,7 @@ function AppCards(params: Omit<AppParams, "mode">) {
     });
 
     // Handle input during the question step
-    function useInputCardStep(input: string, key: any) {
+    function useInputCardStep(input: string, _key: any) {
         if (input === "f") {
             setCardSide(cardSide === "front" ? "back" : "front");
             return;
@@ -461,7 +461,7 @@ function readParams(): AppParams {
     return params;
 }
 
-// The `useScreenSize` hook code is from https://github.com/mordv/mnswpr
+// The code of `useScreenSize` hook is from https://github.com/mordv/mnswpr
 // by mordv. Thank you!
 interface SizeType {
     width: number;

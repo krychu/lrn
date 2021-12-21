@@ -1,56 +1,47 @@
 {
-	"name": "flashcards_ink",
-	"version": "0.0.0",
-	"license": "MIT",
-	"bin": "dist/cli.js",
-	"engines": {
-		"node": ">=10"
-	},
-	"scripts": {
-		"build": "tsc",
-		"start": "npm run build && dist/cli.js",
-		"pretest": "npm run build",
-		"test": "xo && ava"
-	},
-	"files": [
-		"dist/cli.js"
-	],
-	"dependencies": {
-		"ink": "^3.2.0",
-		"ink-text-input": "^4.0.2",
-		"meow": "^9.0.0",
-		"react": "^17.0.2",
-		"react-dom": "^17.0.2",
-		"recoil": "^0.5.2"
-	},
-	"ava": {
-		"typescript": {
-			"extensions": [
-				"tsx"
-			],
-			"rewritePaths": {
-				"source/": "dist/"
-			}
-		}
-	},
-	"xo": {
-		"extends": "xo-react",
-		"rules": {
-			"react/prop-types": "off"
-		}
-	},
-	"devDependencies": {
-		"@ava/typescript": "^3.0.1",
-		"@sindresorhus/tsconfig": "^2.0.0",
-		"@types/react": "^17.0.37",
-		"ava": "^3.15.0",
-		"chalk": "^4.1.2",
-		"eslint-config-xo-react": "^0.25.0",
-		"eslint-plugin-react": "^7.27.1",
-		"eslint-plugin-react-hooks": "^4.3.0",
-		"ink-testing-library": "^2.1.0",
-		"ts-node": "^10.4.0",
-		"typescript": "^4.5.2",
-		"xo": "^0.39.1"
-	}
+	  "name": "lrn",
+	  "version": "0.0.1",
+    "description": "Command-line tool for learning by repetition",
+	  "license": "MIT",
+    "repository": "krychu/lrn",
+    "author": {
+        "name": "Krystian Samp",
+        "email": "samp.krystian@gmail.com"
+    },
+	  "bin": "dist/lrn.js",
+	  "engines": {
+		    "node": ">=10"
+	  },
+	  "scripts": {
+		    "build": "tsc",
+		    "start": "npm run build && dist/cli.js",
+		    "pretest": "npm run build"
+	  },
+	  "files": [
+		    "dist/lrn.js"
+	  ],
+    "keywords": [
+        "cli-app",
+        "cli",
+        "learn",
+        "learning",
+        "flashcards",
+        "spaced repetition",
+        "repetition"
+    ],
+	  "dependencies": {
+		    "ink": "^3.2.0",
+		    "react": "^17.0.2",
+		    "react-dom": "^17.0.2"
+	  },
+	  "devDependencies": {
+		    "@sindresorhus/tsconfig": "^2.0.0",
+		    "@types/react": "^17.0.37",
+		    "chalk": "^4.1.2",
+		    "eslint-plugin-react": "^7.27.1",
+		    "eslint-plugin-react-hooks": "^4.3.0",
+		    "ink-testing-library": "^2.1.0",
+		    "ts-node": "^10.4.0",
+		    "typescript": "^4.5.2"
+	  }
 }
