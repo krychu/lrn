@@ -2,11 +2,13 @@
 
 // lrn
 //
-// Command-line tool for learning by repetition repetition. It doesn't support
-// sophisticated spacing algorithms, schedules, categories, tags, styles etc.
-// You are given 0 opportunity to procrastinate, no tweaking knobs and whistles.
-// Even the deck file format makes .csv look complicated. Consequently, `lrn`
-// removes the last frontier between you and the damn thing you want to learn.
+// Command-line tool for learning by repetition repetition. `lrn` doesn't
+// support sophisticated spacing algorithms, schedules, categories, tags,
+// styles etc. The final frontier between you and the thing you want to
+// learn is removed. No last chance to procrastinate by tweaking knobs and
+// whistles of the learning tool itself. You won't find refuge in
+// "designing" your deck either; the input file format makes .csv look
+// complicated. What's left is to learn, learn, and repeat.
 //
 // Author: Krystian Samp (samp.krystian at gmail.com)
 // License: MIT
@@ -42,6 +44,8 @@ function usage() {
     const script = path.basename(__filename);
 
     console.log(`
+  Learn by repetition.
+
   Usage
     $ ${script} [OPTIONS] file.txt
 

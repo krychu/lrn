@@ -1,6 +1,8 @@
 # lrn
 
-Command-line tool for learning by repetition repetition. It doesn't support sophisticated spacing algorithms, schedules, categories, tags, styles etc. You are given 0 opportunity to procrastinate, no tweaking knobs and whistles. Even the deck file format makes .csv look complicated. Consequently, `lrn` removes the last frontier between you and the damn thing you want to learn.
+Command-line tool for learning by repetition repetition. <br><br>
+
+`lrn` doesn't support sophisticated spacing algorithms, schedules, categories, tags, styles etc. The final frontier between you and the thing you want to learn is removed. No last chance to procrastinate by tweaking knobs and whistles of the learning tool itself. You won't find refuge in "designing" your deck either; the input file format makes .csv look complicated. What's left is to learn, learn, and repeat.
 
 ## Install
 
@@ -18,9 +20,9 @@ $ lrn
 
   Options
 
-    -m match | cards     Mode of learning. In the \`match\` mode you type in
+    -m match | cards     Mode of learning. In the `match` mode you type in
                          answer to a question, which is then checked against
-                         the correct answer. In the \`cards\` mode you flip
+                         the correct answer. In the `cards` mode you flip
                          between question and the correct answer, and
                          decide yourself whether you knew it or not.
 
@@ -35,7 +37,7 @@ $ lrn
     C-s           Show/hide status bar. Hidden by default.
     C-c or ESC    Exit.
 
-  Keybindings unique to \`cards\` mode:
+  Keybindings unique to `cards` mode:
 
     f             Flip the card.
     y             Accept the card as answered correctly.
