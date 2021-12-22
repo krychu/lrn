@@ -2,9 +2,11 @@
 
 <img width="587" alt="lrn" src="https://user-images.githubusercontent.com/947457/147010333-c05a6a4a-cb02-457c-a806-54512c3ef766.png">
 
-Command-line tool for learning by repetition repetition. <br>
+Command-line tool for learning by repetition. <br>
 
-`lrn` doesn't support sophisticated spacing algorithms, schedules, categories, tags, styles etc. The final frontier between you and the thing you want to learn is removed. No last chance to procrastinate by tweaking knobs and whistles of the learning tool itself. You won't find refuge in "designing" your deck either; the input file format makes .csv look complicated. What's left is to learn, learn, and repeat.
+In `lrn` you answer a series of self-prepared questions. You can choose between two modes. In the `match` mode you type in answer to a question, which is then checked against the correct answer. In the `cards` mode you flip between question and the correct answer, and decide yourself whether you knew it or not (this is very much like flashcards).
+
+`lrn` doesn't support sophisticated spacing algorithms, schedules, categories, tags, styles etc. The final barrier between you and the thing you want to learn is removed. No last chance to procrastinate by tweaking knobs and whistles of the learning tool itself. What's left is to learn, learn, and repeat.
 
 ## Install
 
@@ -13,7 +15,7 @@ $ npm install --global lrn
 $ lrn
 ```
 
-## CLI
+## `lrn` -h
 
 ```
   Usage
@@ -54,3 +56,7 @@ $ lrn
     answer2
 
 ```
+
+## Thanks
+
+Big thank you to [lnarmour](https://github.com/lnarmour) for donating the `lrn` package name at https://www.npmjs.com/
