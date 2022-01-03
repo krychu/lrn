@@ -6,7 +6,7 @@ Command-line tool for learning by repetition. <br>
 
 In `lrn` you answer a series of self-prepared questions. You can choose between two modes. In the `match` mode you type answer to a question, which is then checked against the correct answer. In the `cards` mode you flip between question and the correct answer, and decide yourself whether you knew it or not (just like flashcards).
 
-`lrn` doesn't support sophisticated spacing algorithms, schedules, categories, tags, styles etc. The final barrier between you and the thing you want to learn is removed. No last chance to procrastinate by tweaking knobs and whistles of the learning tool itself. What's left is to learn, learn, and repeat.
+`lrn` doesn't support spaced-repetition algorithms, schedules, categories, tags, styles etc. The final barrier between you and the thing you want to learn is removed. No last chance to procrastinate by tweaking knobs and whistles of the learning tool itself. What's left is to learn, learn, and repeat.
 
 # Install
 
