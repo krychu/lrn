@@ -35,25 +35,23 @@ interface AppParams {
 };
 
 function usage() {
-    const script = path.basename(__filename);
-
     console.log(`
   Learn by repetition.
 
   Usage
-    $ ${script} [OPTIONS] file.txt
+    $ lrn [OPTIONS] deck.txt
 
 
   Options
 
-    -m match | cards     Mode of learning. In the \`match\` mode you type in
+    -m match | cards     Mode of learning. In the \`match\` mode you type
                          answer to a question, which is then checked against
                          the correct answer. In the \`cards\` mode you flip
                          between question and the correct answer, and
                          decide yourself whether you knew it or not.
 
-    -r N                 Required number of times a question must be
-                         answered correctly. Default: 1.
+    -r N                 Required number of times each question must be
+                         answered correctly. Default is 1.
 
     -s                   Show staus bar at the bottom of the screen.
 
@@ -70,7 +68,7 @@ function usage() {
     n             Accept the card as answered wrong.
 
 
-  The format of the file is as follows:
+  Format of a deck file:
     question1
     answer1
 
@@ -164,9 +162,9 @@ function AppMatch(params: Omit<AppParams, "mode">) {
     }
 
     function gotoQuestionStep() {
-        setCard(getNextCard(cards, requiredGoodCnt));
         setUserInput("");
         setStep("question");
+        setCard(getNextCard(cards, requiredGoodCnt));
     }
 
     function gotoEndStep() {
@@ -286,8 +284,8 @@ function AppCards(params: Omit<AppParams, "mode">) {
 
     function gotoCardStep() {
         setStep("card");
-        setCard(getNextCard(cards, requiredGoodCnt));
         setCardSide("front");
+        setCard(getNextCard(cards, requiredGoodCnt));
     }
 
     function gotoEndStep() {
@@ -363,7 +361,7 @@ function getProgressString(cards: Card[], requiredGoodCnt: number): string {
 }
 
 function readCards(filename: string): Card[] {
-	  const text = fs.readFileSync(filename, {encoding: "utf8"});
+	const text = fs.readFileSync(filename, {encoding: "utf8"});
 	const lines = text.split(/\n/);
 	const cards: Card[] = [];
 
@@ -491,7 +489,7 @@ function useScreenSize(): SizeType {
 /*******************************************************************************
    LICENSE:
    the MIT License (MIT)
-   Copyright (c) 2020 Krystian Samp
+   Copyright (c) 2022 Krystian Samp
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
    in the Software without restriction, including without limitation the rights

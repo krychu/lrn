@@ -4,59 +4,56 @@
 
 Command-line tool for learning by repetition. <br>
 
-In `lrn` you answer a series of self-prepared questions. You can choose between two modes. In the `match` mode you type in answer to a question, which is then checked against the correct answer. In the `cards` mode you flip between question and the correct answer, and decide yourself whether you knew it or not (this is very much like flashcards).
+In `lrn` you answer a series of self-prepared questions. You can choose between two modes. In the `match` mode you type answer to a question, which is then checked against the correct answer. In the `cards` mode you flip between question and the correct answer, and decide yourself whether you knew it or not (just like flashcards).
 
 `lrn` doesn't support sophisticated spacing algorithms, schedules, categories, tags, styles etc. The final barrier between you and the thing you want to learn is removed. No last chance to procrastinate by tweaking knobs and whistles of the learning tool itself. What's left is to learn, learn, and repeat.
 
-## Install
+# Install
 
 ```bash
 $ npm install --global lrn
+```
+
+# Usage
+
+Run `lrn` without arguments to see usage instructions:
+
+```bash
 $ lrn
 ```
 
-## `lrn` -h
+As an example, to practice a deck in `match` mode:
 
-```
-  Usage
-    $ lrn [OPTIONS] file.txt
-
-
-  Options
-
-    -m match | cards     Mode of learning. In the `match` mode you type in
-                         answer to a question, which is then checked against
-                         the correct answer. In the `cards` mode you flip
-                         between question and the correct answer, and
-                         decide yourself whether you knew it or not.
-
-    -r N                 Required number of times a question must be
-                         answered correctly. Default: 1.
-
-    -s                   Show staus bar at the bottom of the screen.
-
-
-  Keybindings
-
-    C-s           Show/hide status bar. Hidden by default.
-    C-c or ESC    Exit.
-
-  Keybindings unique to `cards` mode:
-
-    f             Flip the card.
-    y             Accept the card as answered correctly.
-    n             Accept the card as answered wrong.
-
-
-  The format of the file is as follows:
-    question1
-    answer1
-
-    question2
-    answer2
-
+```bash
+$ lrn -m match decks/c.txt
 ```
 
-## Thanks
+# Format of a deck file
 
-Big thank you to [lnarmour](https://github.com/lnarmour) for donating the `lrn` package name at https://www.npmjs.com/
+Question and answer appear on separate lines, and are followed by a blank line:
+
+```
+Question 1
+Answer 1
+
+Question 2
+Answer 2
+
+...
+```
+
+The same deck can be practiced in `match` and `cards` modes.
+
+# Working with big decks
+
+It's recommended to keep your decks small so each can be studied in a single session. If you end up with a big deck you can generate smaller ones with:
+
+```bash
+$ split -l 72 big_deck.txt deck_
+```
+
+Just keep in mind that `-l` specifies number of lines, and each question and answer takes three lines in the deck file. If the learning material is hard, generate decks with fewer questions. If the material is easy, make the decks bigger.
+
+# Thanks
+
+Thanks to [lnarmour](https://github.com/lnarmour) for donating the `lrn` package name at https://www.npmjs.com/
