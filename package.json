@@ -1,6 +1,6 @@
 {
 	  "name": "lrn",
-	  "version": "0.0.3",
+	  "version": "0.1.0",
 	  "description": "Command-line tool for learning by repetition",
 	  "license": "MIT",
 	  "repository": {
