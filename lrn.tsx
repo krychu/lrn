@@ -13,6 +13,7 @@ import path from "path";
 import React, {useState, useEffect} from 'react';
 import {useStdout, Text, Box, Spacer, useInput, useApp, render} from 'ink';
 import chalk from "chalk";
+import latinize from "latinize";
 
 const userInputColor = "white";
 const goodAnswerColor = "green";
@@ -30,6 +31,7 @@ export interface Card {
 interface AppParams {
     mode: "match" | "cards";
     filename: string;
+    latinize: boolean;
     requiredGoodCnt: number;
     showStatusBar: boolean;
 };
@@ -50,8 +52,10 @@ function usage() {
                          between question and the correct answer, and
                          decide yourself whether you knew it or not.
 
+    -l                   Latinize
+
     -r N                 Required number of times each question must be
-                         answered correctly. Default is 1.
+                         answered correctly in a row. Default is 1.
 
     -s                   Show staus bar at the bottom of the screen.
 
@@ -85,11 +89,11 @@ const params = readParams();
 
 if (params.mode === "match") {
     render(
-		    <AppMatch filename={params.filename} requiredGoodCnt={params.requiredGoodCnt} showStatusBar={params.showStatusBar} />
+		    <AppMatch filename={params.filename} latinize={params.latinize} requiredGoodCnt={params.requiredGoodCnt} showStatusBar={params.showStatusBar} />
     );
 } else {
     render(
-        <AppCards filename={params.filename} requiredGoodCnt={params.requiredGoodCnt} showStatusBar={params.showStatusBar} />
+        <AppCards filename={params.filename} latinize={params.latinize} requiredGoodCnt={params.requiredGoodCnt} showStatusBar={params.showStatusBar} />
     );
 }
 
@@ -158,6 +162,9 @@ function AppMatch(params: Omit<AppParams, "mode">) {
     }
 
     function gotoBadAnswerStep() {
+        if (card) {
+            card.goodCnt = 0;
+        }
         setStep("bad-answer");
     }
 
@@ -173,7 +180,8 @@ function AppMatch(params: Omit<AppParams, "mode">) {
     }
 
     function isAnswerGood() {
-        return userInput.toLowerCase() === card?.answer.toLowerCase();
+        const correctAnswer = (params.latinize ? latinize(card?.answer as string) : card?.answer)?.toLowerCase();
+        return userInput.toLowerCase() === correctAnswer;//card?.answer.toLowerCase();
     }
 
     function renderStatusBar() {
@@ -410,8 +418,9 @@ function readParams(): AppParams {
     const params: AppParams = {
         filename: "",
         mode: "match",
+        latinize: false,
         requiredGoodCnt: 1,
-        showStatusBar: false
+        showStatusBar: false,
     };
 
     let i=2;
@@ -427,6 +436,10 @@ function readParams(): AppParams {
                 }
             }
             usage();
+        }
+        else if (arg === "-l") {
+            params.latinize = true;
+            i+=1;
         }
         else if (arg === "-r") {
             if (i+1 < process.argv.length) {
