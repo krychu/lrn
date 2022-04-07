@@ -55,7 +55,7 @@ function usage() {
     -l                   Latinize
 
     -r N                 Required number of times each question must be
-                         answered correctly. Default is 1.
+                         answered correctly in a row. Default is 1.
 
     -s                   Show staus bar at the bottom of the screen.
 
@@ -162,6 +162,9 @@ function AppMatch(params: Omit<AppParams, "mode">) {
     }
 
     function gotoBadAnswerStep() {
+        if (card) {
+            card.goodCnt = 0;
+        }
         setStep("bad-answer");
     }
 
@@ -436,6 +439,7 @@ function readParams(): AppParams {
         }
         else if (arg === "-l") {
             params.latinize = true;
+            i+=1;
         }
         else if (arg === "-r") {
             if (i+1 < process.argv.length) {
